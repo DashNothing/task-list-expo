@@ -51,6 +51,13 @@ export default function App() {
     ]);
   };
 
+  const deleteTask = (id) => {
+    let allTasks = [...tasks];
+    const deleteIndex = allTasks.findIndex((task) => task.id == id);
+    allTasks.splice(deleteIndex, 1);
+    setTasks(allTasks);
+  };
+
   const showModal = () => setModalVisible(true);
   const hideModal = () => setModalVisible(false);
 
@@ -64,7 +71,11 @@ export default function App() {
         <Headline style={styles.headline}>
           TaskList - Organize Your Day
         </Headline>
-        <TaskList tasks={tasks} onItemPress={handleListItemPress} />
+        <TaskList
+          tasks={tasks}
+          handleItemPress={handleListItemPress}
+          handleItemDelete={deleteTask}
+        />
         <FAB
           style={styles.fab}
           color="white"

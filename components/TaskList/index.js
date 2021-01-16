@@ -1,17 +1,18 @@
 import React, { Fragment, useState } from "react";
-import { Text, TouchableRipple } from "react-native-paper";
+import { Text, Colors } from "react-native-paper";
 import { StyleSheet, View, FlatList } from "react-native";
 
 import TaskListItem from "../TaskListItem";
 
-const TaskList = ({ tasks, onItemPress }) => {
+const TaskList = ({ tasks, handleItemPress, handleItemDelete }) => {
   const renderItem = ({ item }) => {
     return (
       <TaskListItem
         title={item.title}
         isComplete={item.isComplete}
         isImportant={item.isImportant}
-        onPress={() => onItemPress(item.id)}
+        handlePress={() => handleItemPress(item.id)}
+        handleDelete={() => handleItemDelete(item.id)}
       />
     );
   };
