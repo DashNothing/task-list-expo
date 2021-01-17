@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from "react";
-import { Provider as PaperProvider, Headline, FAB } from "react-native-paper";
+import {
+  Provider as PaperProvider,
+  Headline,
+  FAB,
+  DefaultTheme,
+} from "react-native-paper";
 import { SafeAreaView, StyleSheet } from "react-native";
 import TaskList from "./components/TaskList";
 import AddTaskDialog from "./components/AddTaskDialog";
@@ -12,6 +17,13 @@ import DateFormatter from "./utils/DateFormatter";
 
 export default function App() {
   const [tasks, setTasks] = useState([]);
+  const [selectedDay, setSelectedDay] = useState(
+    DateFormatter.dateToDateString(new Date())
+  );
+  const [selectedDayTasks, setSelectedDayTasks] = useState([]);
+
+  const [modalVisible, setModalVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
   const fetchTasks = async () => {
     try {
@@ -38,15 +50,14 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    saveTasks();
+    saveTasks().then(() => {
+      setSelectedDayTasks(tasks.filter((task) => task.date == selectedDay));
+    });
   }, [tasks]);
 
-  const [selectedDay, setSelectedDay] = useState(
-    DateFormatter.dateToDateString(new Date())
-  );
-
-  const [modalVisible, setModalVisible] = useState(false);
-  const [calendarVisible, setCalendarVisible] = useState(false);
+  useEffect(() => {
+    setSelectedDayTasks(tasks.filter((task) => task.date == selectedDay));
+  }, [selectedDay]);
 
   const handleListItemPress = (id) => {
     let allTasks = [...tasks];
@@ -71,6 +82,7 @@ export default function App() {
         id: lastId + 1,
         title: title,
         isImportant: isImportant,
+        date: selectedDay,
       },
     ]);
   };
@@ -101,12 +113,12 @@ export default function App() {
   };
 
   return (
-    <PaperProvider>
+    <PaperProvider theme={theme}>
       <AppBar onCalendarPress={showCalendar} />
       <SafeAreaView style={styles.container}>
         <Headline style={styles.headline}>{selectedDay}</Headline>
         <TaskList
-          tasks={tasks}
+          tasks={selectedDayTasks}
           handleItemPress={handleListItemPress}
           handleItemDelete={deleteTask}
         />
@@ -149,6 +161,15 @@ const styles = StyleSheet.create({
     bottom: 40,
     padding: 8,
     borderRadius: 100,
-    backgroundColor: "#79c090",
   },
 });
+
+const theme = {
+  ...DefaultTheme,
+  colors: {
+    ...DefaultTheme.colors,
+    primary: "#333",
+    accent: "#79c090",
+  },
+  roundness: 8,
+};

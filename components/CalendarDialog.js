@@ -1,13 +1,21 @@
 import React, { useState } from "react";
-import { Dialog, Portal } from "react-native-paper";
+import { Dialog, Portal, withTheme } from "react-native-paper";
 import { Calendar } from "react-native-calendars";
 import { StyleSheet } from "react-native";
 
-const CalendarDialog = ({ visible, onDismiss, onDayPress, selectedDay }) => {
+const CalendarDialog = ({
+  visible,
+  onDismiss,
+  onDayPress,
+  selectedDay,
+  theme,
+}) => {
+  const themeColors = theme.colors;
+
   const markedDates = {
     [selectedDay]: {
       selected: true,
-      selectedColor: "cyan",
+      selectedColor: themeColors.accent,
     },
   };
 
@@ -19,7 +27,10 @@ const CalendarDialog = ({ visible, onDismiss, onDayPress, selectedDay }) => {
           <Calendar
             firstDay={1}
             markedDates={{ ...markedDates }}
-            onDayPress={(day) => onDayPress(day)}
+            onDayPress={(day) => {
+              onDayPress(day);
+              onDismiss();
+            }}
           />
         </Dialog.Content>
       </Dialog>
@@ -31,4 +42,4 @@ const styles = StyleSheet.create({
   dialog: {},
 });
 
-export default CalendarDialog;
+export default withTheme(CalendarDialog);

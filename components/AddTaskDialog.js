@@ -37,6 +37,7 @@ const AddTaskDialog = ({ visible, onDismiss, onConfirm }) => {
           />
         </Dialog.Content>
         <Dialog.Actions>
+          <Button onPress={() => closeModal()}>Cancel</Button>
           <Button
             onPress={() => {
               onConfirm(inputTitle, isImportant);
@@ -45,7 +46,6 @@ const AddTaskDialog = ({ visible, onDismiss, onConfirm }) => {
           >
             Done
           </Button>
-          <Button onPress={() => closeModal()}>Cancel</Button>
         </Dialog.Actions>
       </Dialog>
     </Portal>
