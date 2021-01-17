@@ -18,7 +18,7 @@ const TaskList = ({ tasks, handleItemPress, handleItemDelete }) => {
   };
 
   const taskList = () => {
-    if (tasks) {
+    if (tasks.length > 0) {
       return (
         <FlatList
           style={styles.container}

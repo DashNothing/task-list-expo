@@ -1,34 +1,52 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Provider as PaperProvider, Headline, FAB } from "react-native-paper";
-import { StyleSheet, Text, View } from "react-native";
-//import BottomNav from "./components/BottomNav";
+import { SafeAreaView, StyleSheet } from "react-native";
 import TaskList from "./components/TaskList";
 import AddTaskDialog from "./components/AddTaskDialog";
+import AppBar from "./components/AppBar";
+import CalendarDialog from "./components/CalendarDialog";
+
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import DateFormatter from "./utils/DateFormatter";
 
 export default function App() {
-  const [tasks, setTasks] = useState([
-    { id: 1, title: "Feed the dog", isComplete: false, isImportant: false },
-    {
-      id: 2,
-      title: "Wash the car and the hair cleaning lady",
-      isComplete: false,
-      isImportant: false,
-    },
-    {
-      id: 3,
-      title: "Be the best at chess one could possibly be",
-      isComplete: false,
-      isImportant: true,
-    },
-    {
-      id: 4,
-      title: "Sommersault if necessary",
-      isComplete: false,
-      isImportant: false,
-    },
-  ]);
+  const [tasks, setTasks] = useState([]);
+
+  const fetchTasks = async () => {
+    try {
+      let loadedTasksJson = await AsyncStorage.getItem("tasks");
+      console.log(loadedTasksJson);
+      if (loadedTasksJson !== null) {
+        setTasks(JSON.parse(loadedTasksJson));
+      }
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  const saveTasks = async () => {
+    try {
+      await AsyncStorage.setItem("tasks", JSON.stringify(tasks));
+    } catch (e) {
+      console.log(e);
+    }
+  };
+
+  useEffect(() => {
+    fetchTasks();
+  }, []);
+
+  useEffect(() => {
+    saveTasks();
+  }, [tasks]);
+
+  const [selectedDay, setSelectedDay] = useState(
+    DateFormatter.dateToDateString(new Date())
+  );
 
   const [modalVisible, setModalVisible] = useState(false);
+  const [calendarVisible, setCalendarVisible] = useState(false);
 
   const handleListItemPress = (id) => {
     let allTasks = [...tasks];
@@ -38,9 +56,15 @@ export default function App() {
     setTasks(allTasks);
   };
 
-  const addTask = (title, isImportant) => {
-    const ids = tasks.map((task) => task.id);
-    const lastId = Math.max(...ids);
+  const addTask = async (title, isImportant) => {
+    let lastId;
+    if (tasks.length == 0) {
+      lastId = 1;
+    } else {
+      const ids = tasks.map((task) => task.id);
+      lastId = Math.max(...ids);
+    }
+
     setTasks([
       ...tasks,
       {
@@ -61,16 +85,26 @@ export default function App() {
   const showModal = () => setModalVisible(true);
   const hideModal = () => setModalVisible(false);
 
+  const showCalendar = () => setCalendarVisible(true);
+  const hideCalendar = () => setCalendarVisible(false);
+
   const handleModalDismiss = () => {
     hideModal();
   };
 
+  const handleCalendarDismiss = () => {
+    hideCalendar();
+  };
+
+  const handleCalendarDayPress = (day) => {
+    setSelectedDay(day.dateString);
+  };
+
   return (
     <PaperProvider>
-      <View style={styles.container}>
-        <Headline style={styles.headline}>
-          TaskList - Organize Your Day
-        </Headline>
+      <AppBar onCalendarPress={showCalendar} />
+      <SafeAreaView style={styles.container}>
+        <Headline style={styles.headline}>{selectedDay}</Headline>
         <TaskList
           tasks={tasks}
           handleItemPress={handleListItemPress}
@@ -82,12 +116,18 @@ export default function App() {
           icon="plus"
           onPress={() => showModal()}
         />
-      </View>
-      <AddTaskDialog
-        visible={modalVisible}
-        onDismiss={handleModalDismiss}
-        onConfirm={addTask}
-      />
+        <AddTaskDialog
+          visible={modalVisible}
+          onDismiss={handleModalDismiss}
+          onConfirm={addTask}
+        />
+        <CalendarDialog
+          visible={calendarVisible}
+          onDayPress={handleCalendarDayPress}
+          onDismiss={handleCalendarDismiss}
+          selectedDay={selectedDay}
+        />
+      </SafeAreaView>
     </PaperProvider>
   );
 }
@@ -96,12 +136,12 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    paddingTop: 60,
     alignItems: "center",
   },
   headline: {
     fontWeight: "bold",
     marginBottom: 30,
+    marginTop: 10,
   },
   fab: {
     position: "absolute",
